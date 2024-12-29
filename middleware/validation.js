@@ -21,16 +21,23 @@ const carUpdateSchema = Joi.object({
     productionYear: Joi.number().integer().min(1900).max(new Date().getFullYear()).optional(),
     licensePlate: Joi.string().optional(),
     garageIds: Joi.array().items(Joi.number().integer()).optional(),
-    // Allow these fields but they'll be ignored in the controller
     id: Joi.number().optional(),
     garages: Joi.array().optional()
 });
 
-const maintenanceRequestSchema = Joi.object({
+const maintenanceRequestCreateSchema = Joi.object({
     serviceType: Joi.string().required(),
     scheduledDate: Joi.date().iso().required(),
     garageId: Joi.number().integer().required(),
     carId: Joi.number().integer().required()
+});
+
+const maintenanceRequestUpdateSchema = Joi.object({
+    serviceType: Joi.string().optional(),
+    scheduledDate: Joi.date().iso().optional(),
+    garageId: Joi.number().integer().optional(),
+    carId: Joi.number().integer().optional(),
+    id: Joi.number().optional()
 });
 
 const validate = (schema) => {
@@ -48,5 +55,6 @@ module.exports = {
     validateService: validate(serviceSchema),
     validateCarCreate: validate(carCreateSchema),
     validateCarUpdate: validate(carUpdateSchema),
-    validateMaintenanceRequest: validate(maintenanceRequestSchema)
+    validateMaintenanceRequestCreate: validate(maintenanceRequestCreateSchema),
+    validateMaintenanceRequestUpdate: validate(maintenanceRequestUpdateSchema)
 }; 

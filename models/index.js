@@ -3,7 +3,7 @@ const Service = require('./Service');
 const MaintenanceRequest = require('./MaintenanceRequest');
 const CarService = require('./CarService');
 
-// Define relationships
+
 Car.belongsToMany(Service, { 
     through: CarService,
     foreignKey: 'carId',

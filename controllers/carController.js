@@ -11,7 +11,7 @@ exports.createCar = async (req, res) => {
         });
         
         if (req.body.garageIds && req.body.garageIds.length > 0) {
-            // Verify all garages exist and have capacity
+           
             const garages = await Service.findAll({
                 where: {
                     id: {
@@ -25,7 +25,7 @@ exports.createCar = async (req, res) => {
                 return res.status(400).json({ error: 'One or more garages not found' });
             }
 
-            // Update each garage's capacity
+           
             await Promise.all(garages.map(async (garage) => {
                 if (garage.capacity <= 0) {
                     throw new Error(`Garage ${garage.name} is at full capacity`);
@@ -36,7 +36,7 @@ exports.createCar = async (req, res) => {
             await car.setGarages(req.body.garageIds);
         }
         
-        // Fetch the car with its garages
+       
         const carWithGarages = await Car.findByPk(car.id, {
             include: [{
                 model: Service,
@@ -128,14 +128,14 @@ exports.updateCar = async (req, res) => {
         const newGarageIds = garageIds || (garages && garages.map(g => g.id));
         
         if (newGarageIds) {
-            // Get current garage IDs
+           
             const currentGarageIds = car.garages.map(g => g.id);
             
-            // Find garages to add and remove
+           
             const garagesToAdd = newGarageIds.filter(id => !currentGarageIds.includes(id));
             const garagesToRemove = currentGarageIds.filter(id => !newGarageIds.includes(id));
             
-            // Update capacities for new garages
+            
             if (garagesToAdd.length > 0) {
                 const newGarages = await Service.findAll({
                     where: { id: { [Op.in]: garagesToAdd } }
@@ -149,7 +149,7 @@ exports.updateCar = async (req, res) => {
                 }));
             }
             
-            // Restore capacity for removed garages
+           
             if (garagesToRemove.length > 0) {
                 const removedGarages = await Service.findAll({
                     where: { id: { [Op.in]: garagesToRemove } }
@@ -163,7 +163,7 @@ exports.updateCar = async (req, res) => {
             await car.setGarages(newGarageIds);
         }
         
-        // Return updated car with its garages
+        
         const updatedCar = await Car.findByPk(car.id, {
             include: [{
                 model: Service,
@@ -196,7 +196,7 @@ exports.deleteCar = async (req, res) => {
             return res.status(404).json({ error: 'Car not found' });
         }
 
-        // Restore capacity for all associated garages
+        
         await Promise.all(car.garages.map(async (garage) => {
             await garage.update({ capacity: garage.capacity + 1 });
         }));

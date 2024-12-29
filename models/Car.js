@@ -38,7 +38,7 @@ const Car = sequelize.define('Car', {
         }
     }
 }, {
-    timestamps: false  // If you don't need createdAt and updatedAt
+    timestamps: false  
 });
 
 module.exports = Car; 

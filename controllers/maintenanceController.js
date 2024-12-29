@@ -6,7 +6,7 @@ exports.createMaintenanceRequest = async (req, res) => {
     try {
         const { scheduledDate, garageId } = req.body;
         
-        // Check service capacity
+       
         const service = await Service.findByPk(garageId);
         if (!service) {
             return res.status(404).json({ error: 'Service not found' });
@@ -191,6 +191,75 @@ exports.getMonthlyStatistics = async (req, res) => {
             const month = allMonths.find(m => m.month === stat.get('month'));
             if (month) {
                 month.count = parseInt(stat.get('count'));
+            }
+        });
+
+        res.status(200).json(allMonths);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+exports.getMonthlyRequestsReport = async (req, res) => {
+    try {
+        const { garageId, startMonth, endMonth } = req.query;
+
+       
+        if (!garageId || !startMonth || !endMonth) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters. Need garageId, startMonth, and endMonth' 
+            });
+        }
+
+        
+        const dateFormatRegex = /^\d{4}-\d{2}$/;
+        if (!dateFormatRegex.test(startMonth) || !dateFormatRegex.test(endMonth)) {
+            return res.status(400).json({ 
+                error: 'Invalid date format. Use YYYY-MM format' 
+            });
+        }
+
+        
+        const garage = await Service.findByPk(garageId);
+        if (!garage) {
+            return res.status(404).json({ error: 'Garage not found' });
+        }
+
+       
+        const monthlyData = await MaintenanceRequest.findAll({
+            where: {
+                garageId,
+                scheduledDate: {
+                    [Op.between]: [`${startMonth}-01`, `${endMonth}-31`]
+                }
+            },
+            attributes: [
+                [sequelize.fn('strftime', '%Y-%m', sequelize.col('scheduledDate')), 'yearMonth'],
+                [sequelize.fn('COUNT', sequelize.col('id')), 'requests']
+            ],
+            group: [sequelize.fn('strftime', '%Y-%m', sequelize.col('scheduledDate'))],
+            raw: true
+        });
+
+        
+        const allMonths = [];
+        const startDate = new Date(`${startMonth}-01`);
+        const endDate = new Date(`${endMonth}-01`);
+
+        while (startDate <= endDate) {
+            const yearMonth = startDate.toISOString().slice(0, 7);
+            allMonths.push({
+                yearMonth,
+                requests: 0
+            });
+            startDate.setMonth(startDate.getMonth() + 1);
+        }
+
+        
+        monthlyData.forEach(data => {
+            const month = allMonths.find(m => m.yearMonth === data.yearMonth);
+            if (month) {
+                month.requests = parseInt(data.requests);
             }
         });
 

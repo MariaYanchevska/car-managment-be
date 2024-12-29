@@ -71,14 +71,14 @@ exports.getServiceStatistics = async (req, res) => {
     try {
         const { garageId, startDate, endDate } = req.query;
         
-        // Validate required parameters
+       
         if (!garageId || !startDate || !endDate) {
             return res.status(400).json({ 
                 error: 'Missing required parameters. Need garageId, startDate, and endDate' 
             });
         }
 
-        // Find the garage to get its capacity and associated cars
+       
         const garage = await Service.findByPk(garageId, {
             include: [{
                 model: Car,
@@ -90,10 +90,10 @@ exports.getServiceStatistics = async (req, res) => {
             return res.status(404).json({ error: 'Garage not found' });
         }
 
-        // Get total cars associated with this garage
+        
         const totalAssociatedCars = garage.cars.length;
 
-        // Get all maintenance requests for this garage in the date range
+       
         const maintenanceRequests = await MaintenanceRequest.findAll({
             where: {
                 garageId: garageId,
@@ -109,7 +109,7 @@ exports.getServiceStatistics = async (req, res) => {
             order: [['scheduledDate', 'ASC']]
         });
 
-        // Create a map of date to request count
+        
         const requestsByDate = new Map(
             maintenanceRequests.map(mr => [
                 mr.scheduledDate,
@@ -117,7 +117,7 @@ exports.getServiceStatistics = async (req, res) => {
             ])
         );
 
-        // Generate all dates in range
+        
         const dates = [];
         let currentDate = new Date(startDate);
         const lastDate = new Date(endDate);
